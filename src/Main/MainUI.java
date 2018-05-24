@@ -3,12 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package searchingnews;
+package Main;
 
 import Model.ItemResult;
+import Search.QuerySearch;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
-
 
 /**
  *
@@ -21,13 +28,18 @@ public class MainUI extends javax.swing.JFrame {
      */
     public MainUI() {
         initComponents();
-        initListResult();
+        setVisible(true);
     }
-    
-    private void initListResult(){
+
+    private void initListResult(Set result) {
         DefaultListModel<ItemResult> listModel = new DefaultListModel<>();
-        for(int i = 0; i < 20; i++){
-            listModel.addElement(new ItemResult("Title " + i, "Source" + i));
+        int i = 0;
+        for (Object kv : result) {
+            i++;
+            if(i == 100){
+                break;
+            }
+            listModel.addElement(new ItemResult(kv.toString().split("=")[0], kv.toString().split("=")[1]));
         }
         listResult.setModel(listModel);
     }
@@ -43,7 +55,7 @@ public class MainUI extends javax.swing.JFrame {
 
         jRadioButton1 = new javax.swing.JRadioButton();
         jPanel2 = new javax.swing.JPanel();
-        jTextField1 = new javax.swing.JTextField();
+        edtQuerySearch = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
@@ -57,15 +69,14 @@ public class MainUI extends javax.swing.JFrame {
         setTitle("SEARCH NEWS PROJECT");
         setBackground(new java.awt.Color(255, 255, 255));
         setName("Search news"); // NOI18N
-        setPreferredSize(new java.awt.Dimension(800, 480));
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true), "SEARCH FORM", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP, new java.awt.Font("Times New Roman", 0, 12), new java.awt.Color(0, 0, 102))); // NOI18N
 
-        jTextField1.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
-        jTextField1.setForeground(new java.awt.Color(0, 0, 102));
-        jTextField1.setText("Query search here");
-        jTextField1.setMargin(new java.awt.Insets(2, 5, 2, 2));
-        jTextField1.setPreferredSize(new java.awt.Dimension(60, 35));
+        edtQuerySearch.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+        edtQuerySearch.setForeground(new java.awt.Color(0, 0, 102));
+        edtQuerySearch.setText("Query search here");
+        edtQuerySearch.setMargin(new java.awt.Insets(2, 5, 2, 2));
+        edtQuerySearch.setPreferredSize(new java.awt.Dimension(60, 35));
 
         jButton1.setFont(new java.awt.Font("Times New Roman", 1, 14)); // NOI18N
         jButton1.setForeground(new java.awt.Color(0, 0, 102));
@@ -83,7 +94,7 @@ public class MainUI extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 642, Short.MAX_VALUE)
+                .addComponent(edtQuerySearch, javax.swing.GroupLayout.DEFAULT_SIZE, 642, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -92,7 +103,7 @@ public class MainUI extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(edtQuerySearch, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(4, 4, 4))
         );
@@ -100,6 +111,11 @@ public class MainUI extends javax.swing.JFrame {
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true), "RESULT FORM", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP, new java.awt.Font("Times New Roman", 0, 12), new java.awt.Color(0, 0, 102))); // NOI18N
 
         listResult.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+        listResult.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                onItemListClicked(evt);
+            }
+        });
         jScrollPane3.setViewportView(listResult);
 
         jScrollPane1.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
@@ -110,6 +126,8 @@ public class MainUI extends javax.swing.JFrame {
         txtContentNews.setLineWrap(true);
         txtContentNews.setRows(5);
         txtContentNews.setText("Lightweight means that the Swing component does not have native peer of it's own, it shares a (common) native peer. This native peer comes from the AWT container it is added to (this is typically the window) and is shared amongst all the Swing components within that container hierarchy...  AWT provides the \"heavy\" lifting, connecting to the native OS and providing the core channel through which Swing components get rendered. It also provides much of the native integration, such as the SystemTray, Desktop and per pixel translucency APIs which can be used by Swing  Why use Swing over AWT then....why not just use AWT?  This is matter of opinion, but generally, AWT was replaced by Swing and provides a much more flexible graphical API from which to develop. Because it doesn't rely on the platforms native components, it means you are free to develop components that you need and can be made to run across multiple platforms.  Swing also borrows much of the AWT API, including the Event Queue  JTree and JTable would be my first argument for using Swing over AWT ;)");
+        txtContentNews.setAutoscrolls(false);
+        txtContentNews.setCaretPosition(0);
         txtContentNews.setMargin(new java.awt.Insets(5, 5, 5, 5));
         txtContentNews.setName("txtContentNews"); // NOI18N
         txtContentNews.setOpaque(false);
@@ -161,19 +179,50 @@ public class MainUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        try {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Set a = new QuerySearch().searchWithQuery(edtQuerySearch.getText());
+                        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                /* update GUI code */
+                                initListResult(a);
+                            }
+                        });
+                    } catch (Exception ex) {
+                        Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }).start();
 
+        } catch (Exception ex) {
+            Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
 
-  
+    private void onItemListClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_onItemListClicked
+        // TODO add your handling code here:
+        System.out.println(listResult.getSelectedValue().getTittle());
+        try {
+            String text = new String(Files.readAllBytes(Paths.get("news_dataset/" +
+                    listResult.getSelectedValue().getTittle())), StandardCharsets.UTF_16);
+            txtContentNews.setText(text);
+        } catch (IOException ex) {
+            Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_onItemListClicked
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField edtQuerySearch;
     private javax.swing.JButton jButton1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JRadioButton jRadioButton1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTextField jTextField1;
     private javax.swing.JList<ItemResult> listResult;
     private javax.swing.JTextArea txtContentNews;
     // End of variables declaration//GEN-END:variables

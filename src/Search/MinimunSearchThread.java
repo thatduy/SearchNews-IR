@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package searchingnews;
+package Search;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -14,28 +14,26 @@ import org.json.simple.JSONObject;
  *
  * @author homan
  */
-public class SearchThr implements Runnable {
+public class MinimunSearchThread implements Runnable {
 
-    private String subFolder;
     private JSONObject vectorQuery;
 
-    public SearchThr(String subfolder, JSONObject vectorQuery) {
-        this.subFolder = subfolder;
+    public MinimunSearchThread(JSONObject vectorQuery) {
         this.vectorQuery = vectorQuery;
     }
 
     public void search() throws InterruptedException {
         int count = 0;
         ArrayList<String> files = new ArrayList<>();
-        File directory = new File("./TF_IDF_DOCS/" + subFolder);
+        File directory = new File("./TF_IDF_DOCS" );
         long size = directory.listFiles().length;
         ArrayList<Thread> threads = new ArrayList<>();
         for (File file : directory.listFiles()) {
             count = count + 1;
             size = size - 1;
             files.add(file.getName());
-            if (count == 400) {
-                Thread t = new Thread(new ThreadSearch(subFolder, files, vectorQuery));
+            if (count == 1000) {
+                Thread t = new Thread(new FolderSearchThread(files, vectorQuery));
                 t.start();
                 count = 0;
                 files = new ArrayList<>();
@@ -43,7 +41,7 @@ public class SearchThr implements Runnable {
 
             }
             if (size == 0) {
-                Thread t = new Thread(new ThreadSearch(subFolder, files, vectorQuery));
+                Thread t = new Thread(new FolderSearchThread(files, vectorQuery));
                 t.start();
                 threads.add(t);
                 break;
@@ -54,6 +52,7 @@ public class SearchThr implements Runnable {
         }
     }
 
+    @Override
     public void run() {
         try {
             search();

@@ -3,15 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/G:/JAVA%20SOURCE/SearchingNews/src/searchingnews/SearchThr.java</file>
-            <file>file:/G:/JAVA%20SOURCE/SearchingNews/src/searchingnews/ThreadSearch.java</file>
-            <file>file:/G:/JAVA%20SOURCE/SearchingNews/src/Model/ItemResult.java</file>
-            <file>file:/G:/JAVA%20SOURCE/SearchingNews/src/searchingnews/Convert.java</file>
-            <file>file:/G:/JAVA%20SOURCE/SearchingNews/src/searchingnews/ComputeAngle.java</file>
-            <file>file:/G:/JAVA%20SOURCE/SearchingNews/src/searchingnews/MainUI.java</file>
-            <file>file:/G:/JAVA%20SOURCE/SearchingNews/src/searchingnews/IRS.java</file>
-            <file>file:/G:/JAVA%20SOURCE/SearchingNews/src/searchingnews/ThreadSaveFile.java</file>
-            <file>file:/G:/JAVA%20SOURCE/SearchingNews/src/searchingnews/SearchingNews.java</file>
+            <file>file:/G:/JAVA%20SOURCE/SearchingNews/src/Main/MainCodeRunUI.java</file>
+            <file>file:/G:/JAVA%20SOURCE/SearchingNews/src/Search/MinimunSearchThread.java</file>
+            <file>file:/G:/JAVA%20SOURCE/SearchingNews/src/Main/MainUI.java</file>
+            <file>file:/G:/JAVA%20SOURCE/SearchingNews/src/Search/FolderSearchThread.java</file>
+            <file>file:/G:/JAVA%20SOURCE/SearchingNews/src/Search/QuerySearch.java</file>
         </group>
     </open-files>
 </project-private>
