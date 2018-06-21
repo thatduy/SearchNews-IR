@@ -6,3 +6,5 @@ Download trained data at link below, extract zip file and put it same level with
 https://drive.google.com/open?id=1w6YUuAnmXuxG0lBjJrEcaNNBzUuOsOXn
 
 Download Netbeans IDE to open and run this project: https://netbeans.org/downloads/
+
+You must add json-simple-1.1.jar to project run code
