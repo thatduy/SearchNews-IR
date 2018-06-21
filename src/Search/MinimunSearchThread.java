@@ -7,7 +7,6 @@ package Search;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Map;
 import org.json.simple.JSONObject;
 
 /**
@@ -16,7 +15,7 @@ import org.json.simple.JSONObject;
  */
 public class MinimunSearchThread implements Runnable {
 
-    private JSONObject vectorQuery;
+    private final JSONObject vectorQuery;
 
     public MinimunSearchThread(JSONObject vectorQuery) {
         this.vectorQuery = vectorQuery;
@@ -33,7 +32,7 @@ public class MinimunSearchThread implements Runnable {
             size = size - 1;
             files.add(file.getName());
             if (count == 1000) {
-                Thread t = new Thread(new FolderSearchThread(files, vectorQuery));
+                Thread t = new Thread(new SearchThreadSaveResult(files, vectorQuery));
                 t.start();
                 count = 0;
                 files = new ArrayList<>();
@@ -41,7 +40,7 @@ public class MinimunSearchThread implements Runnable {
 
             }
             if (size == 0) {
-                Thread t = new Thread(new FolderSearchThread(files, vectorQuery));
+                Thread t = new Thread(new SearchThreadSaveResult(files, vectorQuery));
                 t.start();
                 threads.add(t);
                 break;

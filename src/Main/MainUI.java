@@ -7,6 +7,10 @@ package Main;
 
 import Model.ItemResult;
 import Search.QuerySearch;
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -16,6 +20,14 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.SwingWorker;
 
 /**
  *
@@ -29,6 +41,51 @@ public class MainUI extends javax.swing.JFrame {
     public MainUI() {
         initComponents();
         setVisible(true);
+        txtContentNews.setText("");
+        JMenuBar mb = new JMenuBar();
+        setJMenuBar(mb);
+        JMenu theatres = new JMenu("Setting");
+        JMenuItem mi0 = new JMenuItem("Choose CountIDF Folder");
+        JMenuItem mi3 = new JMenuItem("Choose TF_IDF_DOCS Folder");
+        theatres.add(mi0);
+
+        theatres.add(mi3);
+        theatres.addSeparator();
+        mb.add(theatres);
+        mi0.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // TODO Auto-generated method stub
+            final JFileChooser fc = new JFileChooser();
+
+        //In response to a button click:
+            int returnVal = fc.showOpenDialog(jPanel1);
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File fileValues = fc.getSelectedFile();
+            //This is where a real application would open the file.
+            Constants.countIDFFolder = fileValues.getAbsolutePath();
+
+        }
+            }
+        });
+
+        mi3.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // TODO Auto-generated method stub
+ final JFileChooser fc = new JFileChooser();
+
+        //In response to a button click:
+            int returnVal = fc.showOpenDialog(jPanel1);
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File fileValues = fc.getSelectedFile();
+            //This is where a real application would open the file.
+            Constants.TF_IDF_DOCS = fileValues.getAbsolutePath();
+            }
+            }
+        });
     }
 
     private void initListResult(Set result) {
@@ -42,6 +99,7 @@ public class MainUI extends javax.swing.JFrame {
             listModel.addElement(new ItemResult(kv.toString().split("=")[0], kv.toString().split("=")[1]));
         }
         listResult.setModel(listModel);
+        txtContentNews.setText("Done! click on item in list to view content");
     }
 
     /**
@@ -179,18 +237,16 @@ public class MainUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+       
+        txtContentNews.setText("Searching.... please wait......");
+        listResult.setModel(new DefaultListModel<>());
         try {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        Set a = new QuerySearch().searchWithQuery(edtQuerySearch.getText());
-                        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                /* update GUI code */
-                                initListResult(a);
-                            }
-                        });
+                        initListResult(new QuerySearch().searchWithQuery(edtQuerySearch.getText().toString()));
+                        
                     } catch (Exception ex) {
                         Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -206,9 +262,17 @@ public class MainUI extends javax.swing.JFrame {
         // TODO add your handling code here:
         System.out.println(listResult.getSelectedValue().getTittle());
         try {
-            String text = new String(Files.readAllBytes(Paths.get("news_dataset/" +
+            if(listResult.getSelectedValue().getTittle().contains("vnexpress") || 
+                    listResult.getSelectedValue().getTittle().contains("thanhnien")){
+                String text = new String(Files.readAllBytes(Paths.get("news_dataset/" +
+                    listResult.getSelectedValue().getTittle())), StandardCharsets.UTF_8);
+            txtContentNews.setText(text);
+            } else {
+                String text = new String(Files.readAllBytes(Paths.get("news_dataset/" +
                     listResult.getSelectedValue().getTittle())), StandardCharsets.UTF_16);
             txtContentNews.setText(text);
+            }
+            
         } catch (IOException ex) {
             Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
         }

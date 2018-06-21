@@ -6,12 +6,13 @@
 package TrainData;
 
 import Main.Constants;
-import org.json.simple.JSONArray;
+import java.io.BufferedReader;
 import org.json.simple.JSONObject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -19,9 +20,7 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import org.json.simple.parser.JSONParser;
 
 import java.nio.charset.StandardCharsets;
@@ -52,12 +51,22 @@ public class ComputeTFIDF {
 
     public static JSONObject maxtrixx;
 
-    public void computeIDF(ArrayList<File> files) {
-        files.forEach((file) -> {
-            try {
-                String text = new String(Files.readAllBytes(Paths.get("news_dataset/" + file.getName())), StandardCharsets.UTF_16);
-                String[] data = text.toLowerCase().replaceAll(Constants.re, " ").split(" ");
+    public void computeIDF(ArrayList<File> files, ArrayList<String> arrStop) {
+        files.forEach((File file) -> {
+            try { //   news_dataset
+                String text = "";
+                if(file.getName().contains("vnexpress") ||file.getName().contains("thanhnien") ){
+                    text = new String(Files.readAllBytes(Paths.get("news_dataset/" + file.getName())), StandardCharsets.UTF_8).toLowerCase(); 
+                } else {
+                    text = new String(Files.readAllBytes(Paths.get("news_dataset/" + file.getName())), StandardCharsets.UTF_16).toLowerCase();
+                }
+                
+                String[] data = text.replaceAll(Constants.re, " ").split(" ");
                 List<String> deDupStringList = new ArrayList<>(new HashSet<>(Arrays.asList(data)));
+                for(String s: arrStop){
+                    deDupStringList.remove(s);
+                }
+                
                 deDupStringList.forEach((item) -> {
                     if (maxtrixx.get(item) != null) {
                         maxtrixx.put(item, (int) maxtrixx.get(item) + 1);
@@ -66,6 +75,7 @@ public class ComputeTFIDF {
                     }
                 });
             } catch (IOException ex) {
+                System.err.println(ex.toString());
             }
         });
     }
@@ -80,7 +90,7 @@ public class ComputeTFIDF {
                 c = (long) matrix.get(item);
                 double count = countWordInDoc(query2, item);
                 double tf = count / query2.length;
-                double idf = 1 + Math.log10(43303 / c);
+                double idf = 1 + Math.log10(127594  / c);
                 tf_idf.put(item, tf * idf);
             }
 
@@ -90,59 +100,75 @@ public class ComputeTFIDF {
             if (!resultTFIDF.exists()) {
                 resultTFIDF.mkdir();
             }
-            Writer w = new OutputStreamWriter(new FileOutputStream("./Result_TF_IDF_Query/tf_idf_vector_query.txt"), "UTF-16");
-            tf_idf.writeJSONString(w);
-            w.flush();
-            w.close();
+            try (Writer w = new OutputStreamWriter(new FileOutputStream("./Result_TF_IDF_Query/tf_idf_vector_query.txt"), "UTF-16")) {
+                tf_idf.writeJSONString(w);
+                w.flush();
+                //w.close();
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println(e.toString());
         }
         return tf_idf;
     }
 
     public void compute_all_docs(JSONObject matrix) throws Exception {
+        System.out.print("Computing tf-idf for all docs, please wait 100s, may be more....");
         ArrayList<Thread> aThreads = new ArrayList<>();
         File dataset = new File("./news_dataset");
         int size = dataset.listFiles().length;
         int count = 0;
         ArrayList<String> files = new ArrayList<>();
         for (File fNews : dataset.listFiles()) {
-            
-                    count++;
-                    size--;
-                    files.add(fNews.getName());
-                    if (count == 1000) {
-                        System.out.println("1000");
-                        Thread t = new Thread(new ThreadSaveFile(matrix, files));
-                        t.start();
-                        aThreads.add(t);
-                        count = 0;
-                        files = new ArrayList<>();
-                    }
-                    if (size == 0){
-                        System.out.println("0");
-                        Thread t = new Thread(new ThreadSaveFile(matrix, files));
-                        t.start();
-                        aThreads.add(t);
-                        break;
-                    }
+
+            count++;
+            size--;
+            files.add(fNews.getName());
+            if (count == 1000) {
+                System.out.println("1000");
+                ArrayList<String> temp = new ArrayList<>(files);
+                Thread t = new Thread(new ThreadSaveFile(matrix, temp));
+                t.start();
+                aThreads.add(t);
+                count = 0;
+                files = new ArrayList<>();
+            }
+            if (size == 0) {
+                System.out.println("0");
+                ArrayList<String> temp = new ArrayList<>(files);
+                Thread t = new Thread(new ThreadSaveFile(matrix, temp));
+                t.start();
+                aThreads.add(t);
+                break;
+            }
         }
         for (Thread t : aThreads) {
             t.join();
         }
+        System.out.print("Done tf-idf for all docs");
     }
 
     public JSONObject getMatrix() {
         try {
             JSONParser parser = new JSONParser();
-//            String text = new String(Files.readAllBytes(Paths.get("stopwords_en.txt")), StandardCharsets.UTF_8);
-//            String[] stop = text.replaceAll("[^A-Za-z]+", " ").split(" ");
+            ArrayList<String> arrStop = new ArrayList<>();
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader("vietnamese-stopwords.txt"));
+                String line;
+
+                while ((line = reader.readLine()) != null) {
+                    // System.out.println("hihihihi");
+                    arrStop.add(line);
+                }
+                reader.close();
+            } catch (IOException ex) {
+                System.err.println(ex.toString());
+            }
             File f = new File("./CountIDF");
             if (!f.exists()) {
                 f.mkdir();
                 System.out.print("Computing Inverted Index, please wait 10s....");
                 ArrayList<Thread> threads = new ArrayList<>();
-                File dataset = new File("./news_dataset");
+                File dataset = new File("./news_dataset"); // 
                 int size = dataset.listFiles().length;
                 int count = 0;
                 ArrayList<File> files = new ArrayList<>();
@@ -150,25 +176,28 @@ public class ComputeTFIDF {
                     count++;
                     size--;
                     files.add(fNews);
-                    if (count == 1000) {
+                    if (count == 300) {
+                        ArrayList<File> temp = new ArrayList<>(files);
                         Thread t = new Thread(() -> {
                             try {
-                                computeIDF(files);
+                                computeIDF(temp, arrStop);
                             } catch (Exception ex) {
-                                ex.printStackTrace();
+                                System.err.println(ex.toString());
                             }
                         });
                         t.start();
                         threads.add(t);
                         count = 0;
                         files.clear();
+                        //break;
                     }
-                    if (size == 0){
+                    if (size == 0) {
+                         ArrayList<File> temp = new ArrayList<>(files);
                         Thread t = new Thread(() -> {
                             try {
-                                computeIDF(files);
+                                computeIDF(files, arrStop);
                             } catch (Exception ex) {
-                                ex.printStackTrace();
+                                        System.err.println(ex.toString());
                             }
                         });
                         t.start();
@@ -177,32 +206,33 @@ public class ComputeTFIDF {
                     }
 
                 }
-                for (Thread t : threads) {
+                threads.forEach((t) -> {
                     try {
                         t.join();
                     } catch (InterruptedException ex) {
-                        ex.printStackTrace();
+                        System.err.println(ex.toString());
                     }
-                }
+                });
                 try {
-                    Writer w = new OutputStreamWriter(new FileOutputStream("./CountIDF/count_idf.txt"), "UTF-16");
-                    maxtrixx.writeJSONString(w);
-                    w.flush();
-                    w.close();
+                    try (Writer w = new OutputStreamWriter(new FileOutputStream("./CountIDF/count_idf.txt"), "UTF-16")) {
+                        maxtrixx.writeJSONString(w);
+                        w.flush();
+                        w.close();
+                    }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.err.println(e.toString());
                 }
                 System.out.print("Done inverted Index");
             } else {
                 try {
                     maxtrixx = (JSONObject) parser.parse(new InputStreamReader(new FileInputStream("./CountIDF/count_idf.txt"), StandardCharsets.UTF_16));
                 } catch (ParseException ex) {
-                    ex.printStackTrace();
+                    System.err.println(ex.toString());
                 }
             }
 
         } catch (IOException ex) {
-            ex.printStackTrace();
+            System.err.println(ex.toString());
         }
         return maxtrixx;
 

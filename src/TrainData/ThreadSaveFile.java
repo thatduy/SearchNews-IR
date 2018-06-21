@@ -15,25 +15,23 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import org.json.simple.JSONObject;
 
 /**
  *
- * @author Nammm Mèooo
+ * @author VDT
+ * This class will compute tf-idf for all documents and save to disk
  */
 public class ThreadSaveFile implements Runnable {
 
-    private JSONObject matrix;
+    private final JSONObject matrix;
     private ArrayList<String> files = new ArrayList<>();
 
     public ThreadSaveFile(JSONObject matrix, ArrayList<String> files) {
         this.matrix = matrix;
-
         this.files = files;
     }
 
@@ -52,30 +50,35 @@ public class ThreadSaveFile implements Runnable {
         JSONObject tf_idf = new JSONObject();
         for (String file : files) {
             try {
-                String text = new String(Files.readAllBytes(Paths.get("news_dataset/" + file)),
-                        StandardCharsets.UTF_16);
+                String text = "";
+                if(file.contains("vnexpress") ||file.contains("thanhnien") ){
+                    text = new String(Files.readAllBytes(Paths.get("news_dataset/" + file)), StandardCharsets.UTF_8).toLowerCase(); 
+                } else {
+                    text = new String(Files.readAllBytes(Paths.get("news_dataset/" + file)), StandardCharsets.UTF_16).toLowerCase();
+                }
+               
                 String[] data = text.replaceAll(Constants.re, " ").split(" ");
                 List<String> deDupStringList = new ArrayList<>(new HashSet<>(Arrays.asList(data)));
                 for (String item : deDupStringList) {
                     if (matrix.get(item) != null) {
                         double count = countWordInDoc(data, item);
                         double tf = count / data.length;
-                        double idf = Math.log10(43303 / Integer.parseInt(matrix.get(item).toString())) + 1;
+                        double idf = Math.log10(127594 / Integer.parseInt(matrix.get(item).toString())) + 1;
                         tf_idf.put(item, tf * idf);
                     }
                 }
                 try {
-                    Writer w = new OutputStreamWriter(new FileOutputStream("TF_IDF_DOCS/"  + file ), "UTF-16");
-                    tf_idf.writeJSONString(w);
-                    tf_idf = new JSONObject();
-                    w.flush();
-                    w.close();
+                    try (Writer w = new OutputStreamWriter(new FileOutputStream("TF_IDF_DOCS/"  + file ), "UTF-16")) {
+                        tf_idf.writeJSONString(w);
+                        tf_idf = new JSONObject();
+                        w.flush();
+                    }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.err.println(e.toString());
                 }
                 
             } catch (IOException ex) {
-                ex.printStackTrace();
+                System.err.println(ex.toString());
             }
         }
     }

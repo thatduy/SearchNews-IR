@@ -11,6 +11,7 @@ package Main;
  */
 public class Constants {
      public static String re = "[^a-zA-Zăắặẳẵằâầấẩẫậàáảãạđìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựèéẻẽẹêềếểễệ]+";
-
+     public static String countIDFFolder = "";
+      public static String TF_IDF_DOCS = "";
 
 }

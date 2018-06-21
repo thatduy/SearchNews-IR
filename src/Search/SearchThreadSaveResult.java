@@ -8,7 +8,6 @@ package Search;
 
 
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -23,13 +22,13 @@ import org.json.simple.parser.ParseException;
  *
  * @author homan
  */
-public class FolderSearchThread implements Runnable {
+public class SearchThreadSaveResult implements Runnable {
 
 
-    private ArrayList<String> files;
-    private JSONObject vectorQuery;
+    private final ArrayList<String> files;
+    private final JSONObject vectorQuery;
 
-    public FolderSearchThread(ArrayList<String> files, JSONObject vectorQuery) {
+    public SearchThreadSaveResult(ArrayList<String> files, JSONObject vectorQuery) {
 
         this.files = files;
         this.vectorQuery = vectorQuery;
@@ -48,8 +47,8 @@ public class FolderSearchThread implements Runnable {
                 QuerySearch.resultSearch.put(file, angles);
             }
         }
-        } catch (Exception ex) {
-            Logger.getLogger(FolderSearchThread.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException | ParseException ex) {
+            Logger.getLogger(SearchThreadSaveResult.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
