@@ -42,7 +42,6 @@ public class MainUI extends javax.swing.JFrame {
         initComponents();
         setVisible(true);
         txtContentNews.setText("");
-        
     }
 
     private void initListResult(Set result) {
