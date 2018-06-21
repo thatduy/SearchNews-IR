@@ -42,50 +42,7 @@ public class MainUI extends javax.swing.JFrame {
         initComponents();
         setVisible(true);
         txtContentNews.setText("");
-        JMenuBar mb = new JMenuBar();
-        setJMenuBar(mb);
-        JMenu theatres = new JMenu("Setting");
-        JMenuItem mi0 = new JMenuItem("Choose CountIDF Folder");
-        JMenuItem mi3 = new JMenuItem("Choose TF_IDF_DOCS Folder");
-        theatres.add(mi0);
-
-        theatres.add(mi3);
-        theatres.addSeparator();
-        mb.add(theatres);
-        mi0.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // TODO Auto-generated method stub
-            final JFileChooser fc = new JFileChooser();
-
-        //In response to a button click:
-            int returnVal = fc.showOpenDialog(jPanel1);
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File fileValues = fc.getSelectedFile();
-            //This is where a real application would open the file.
-            Constants.countIDFFolder = fileValues.getAbsolutePath();
-
-        }
-            }
-        });
-
-        mi3.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // TODO Auto-generated method stub
- final JFileChooser fc = new JFileChooser();
-
-        //In response to a button click:
-            int returnVal = fc.showOpenDialog(jPanel1);
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File fileValues = fc.getSelectedFile();
-            //This is where a real application would open the file.
-            Constants.TF_IDF_DOCS = fileValues.getAbsolutePath();
-            }
-            }
-        });
+        
     }
 
     private void initListResult(Set result) {
