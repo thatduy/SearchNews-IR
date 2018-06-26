@@ -10,4 +10,4 @@ https://drive.google.com/file/d/1k7EDJU37V_Ol90NutGnhvyiYHJDjbK2H/view?usp=shari
 
 Download Netbeans IDE to open and run this project: https://netbeans.org/downloads/
 
-You must add json-simple-1.1.jar to project run code
+You must add json-simple-1.1.jar to Libs in project to run code
